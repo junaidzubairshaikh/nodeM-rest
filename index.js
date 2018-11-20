@@ -1,11 +1,33 @@
 const http=require('http');
+const https=require('https');
 const url=require('url');
+const fs=require('fs');
 const StringDecoder=require('string_decoder').StringDecoder;
 const environment=require('./config');
 
 
-const server=http.createServer(function(req,res){
+const httpsServerOption={
+    key:fs.readFileSync('./https/key.pem'),
+    cert:fs.readFileSync('./https/cert.pem')
+}
 
+const httpServer=http.createServer(function(req,res){
+    unifiedServer(req,res);
+});
+
+httpServer.listen(environment.httpPort,(req,res)=>{
+    console.log('The server is listening on port ',environment.httpPort);
+});
+
+const httpsServer=https.createServer(httpsServerOption,function(req,res){
+    unifiedServer(req,res);
+});
+
+httpsServer.listen(environment.httpsPort,(req,res)=>{
+    console.log('The server is listening on port', environment.httpsPort)
+});
+
+var unifiedServer=function(req,res){
     var parsedUrl=url.parse(req.url,true);
   
     var trimmedPath=parsedUrl.pathname.replace(/^\/+|\+$/g,'');
@@ -31,32 +53,23 @@ const server=http.createServer(function(req,res){
             payload=typeof(payload)=='object'?payload:{};
             res.setHeader('Content-Type','application\json');
             res.writeHead(statusCode);
-            res.end(JSON.stringify(payload));
+            res.end(JSON.stringify(payload['message']));
                 console.log('Resolver with status code '+statusCode,'with data ',payload);
         });
 
     });
-
-   
-
-    // console.log('hello world js',trimmedPath);
-});
-
-
-server.listen(environment.port,(req,res)=>{
-console.log('The server is listening to port ',environment.port);
-});
+}
 
 var handlers={};
 
-handlers.sampleHandler=function(data,callback){
-    callback(406,data);
+handlers.helloHandler=function(data,callback){
+    callback(406,{message:'Hi, This is Node master class'});
 }
 
 handlers.notFoundHandler=function(data,callback){
-    callback(404, 'Not found');
+    callback(404);
 }
 
 const router={
-    sample:handlers.sampleHandler
+    hello:handlers.helloHandler
 }
