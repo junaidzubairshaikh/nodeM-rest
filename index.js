@@ -4,6 +4,29 @@ const url=require('url');
 const fs=require('fs');
 const StringDecoder=require('string_decoder').StringDecoder;
 const environment=require('./config');
+const libs=require('./lib/libs');
+const handlers=require('./lib/handlers');
+const helper=require('./lib/helpers');
+
+
+//Create a file
+// libs.create('test','newFile',{'hello':'world'},function(err){
+//         console.log(err);
+// });
+
+//read file
+
+// libs.read('test','newFile',(data)=>{
+//  console.log('Reading file...',data)
+// });
+
+// libs.update('test','newFile',{'key':'hello world'},(msg)=>{
+//     console.log(msg);
+// });
+
+// libs.delete('test','newFile',(msg)=>{
+//     console.log(msg);
+// })
 
 
 const httpsServerOption={
@@ -45,31 +68,23 @@ var unifiedServer=function(req,res){
 
         var data={
             'trimmedPath':trimmedPath,
-            'methods':req.method,
-            'payload':buffer
+            'query':parsedUrl.query,
+            'method':req.method.toLowerCase(),
+            'payload':helper.pasrseJson(buffer)
         }
         routerResolver(data,function(statusCode,payload){
             statusCode=typeof(statusCode)=='number'?statusCode:200;
             payload=typeof(payload)=='object'?payload:{};
             res.setHeader('Content-Type','application\json');
             res.writeHead(statusCode);
-            res.end(JSON.stringify(payload['message']));
+            res.end(JSON.stringify(payload));
                 console.log('Resolver with status code '+statusCode,'with data ',payload);
         });
 
     });
 }
 
-var handlers={};
-
-handlers.helloHandler=function(data,callback){
-    callback(406,{message:'Hi, This is Node master class'});
-}
-
-handlers.notFoundHandler=function(data,callback){
-    callback(404);
-}
-
 const router={
-    hello:handlers.helloHandler
+    hello:handlers.helloHandler,
+    users:handlers.users
 }
