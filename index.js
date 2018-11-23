@@ -69,6 +69,7 @@ var unifiedServer=function(req,res){
         var data={
             'trimmedPath':trimmedPath,
             'query':parsedUrl.query,
+            'headers':req.headers,
             'method':req.method.toLowerCase(),
             'payload':helper.pasrseJson(buffer)
         }
@@ -86,5 +87,6 @@ var unifiedServer=function(req,res){
 
 const router={
     hello:handlers.helloHandler,
-    users:handlers.users
+    users:handlers.users,
+    tokens:handlers.token
 }
